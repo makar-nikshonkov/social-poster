@@ -1,0 +1,21 @@
+# Секреты — НИКОГДА не коммитим
+config.json
+
+# Рабочие/временные данные
+drafts.json
+zen_post.txt
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE / редакторы
+.idea/
+.vscode/
+.DS_Store
+
+# Локальные настройки Claude
+.claude/settings.local.json
