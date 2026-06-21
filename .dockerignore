@@ -1,0 +1,24 @@
+# Секреты и локальные данные — не должны попадать в образ
+config.json
+drafts.json
+zen_post.txt
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Git / IDE / редакторы
+.git/
+.gitignore
+.idea/
+.vscode/
+.DS_Store
+.claude/
+
+# Документация и примеры — в образе не нужны
+*.md
+config.example.json
+drafts.example.json

@@ -1,0 +1,16 @@
+services:
+  bot:
+    build: .
+    image: social-poster
+    container_name: social-poster
+    restart: always
+    # config.json с секретами лежит рядом на сервере и монтируется внутрь (только чтение).
+    # В образ он не попадает — так секреты не утекают в слои Docker.
+    volumes:
+      - ./config.json:/app/config.json:ro
+    # Ротация логов, чтобы journal/диск не пухли
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
