@@ -57,7 +57,7 @@ docker compose version
 
 ```bash
 # Код — из git (config.json в репозиторий не входит, это правильно):
-ssh <VM_USER>@<VM_IP> 'git clone <URL_РЕПОЗИТОРИЯ> social-poster || (cd social-poster && git pull)'
+ssh <VM_USER>@<VM_IP> 'git clone https://github.com/makar-nikshonkov/social-poster.git social-poster || (cd social-poster && git pull)'
 ```
 
 Если git-remote нет — закинь файлы напрямую через scp:
