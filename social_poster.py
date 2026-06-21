@@ -17,6 +17,7 @@
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -111,10 +112,21 @@ def save_zen(text):
     return f"Дзен: текст сохранен в {out.name} для ручной вставки (API нет)"
 
 
+def _clean_slug(slug):
+    """ЧПУ: латиница, цифры и дефисы. Чистим то, что мог прислать генератор."""
+    s = re.sub(r"[^a-z0-9-]+", "-", (slug or "").strip().lower())
+    s = re.sub(r"-{2,}", "-", s).strip("-")
+    return s[:80] or None
+
+
 def post_site(cfg, title, body_html, summary=None, cover_url=None,
-              source=None, external_url=None, status="published"):
+              source=None, external_url=None, status="published",
+              meta_title=None, meta_description=None, slug=None):
     """Публикует новость на сайт через API (impactlaunch.ru/api/news).
     Сайт сам отдаёт её в RSS, откуда забирает Дзен.
+
+    meta_title / meta_description — SEO-поля для поисковой выдачи.
+    slug — ЧПУ-адрес (латиница); если не задан, сайт сгенерит из заголовка.
     """
     url = cfg.get("site_api_url", "https://impactlaunch.ru/api/news")
     key = cfg.get("site_api_key", "").strip()
@@ -130,6 +142,13 @@ def post_site(cfg, title, body_html, summary=None, cover_url=None,
         payload["source"] = source
     if external_url:
         payload["external_url"] = external_url
+    if meta_title:
+        payload["meta_title"] = meta_title.strip()
+    if meta_description:
+        payload["meta_description"] = meta_description.strip()
+    clean_slug = _clean_slug(slug)
+    if clean_slug:
+        payload["slug"] = clean_slug
 
     def _send(p):
         r = requests.post(url, headers={"X-Api-Key": key, "Content-Type": "application/json"},

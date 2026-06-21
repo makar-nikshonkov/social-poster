@@ -2,6 +2,7 @@
   "telegram_bot_token": "123456:ABC-токен-бота-из-BotFather",
   "telegram_chat_id": "@your_channel",
   "telegram_owner_id": "ваш_telegram_user_id_чтобы_боту_писали_только_вы",
+  "telegram_allowed_ids": ["доп_user_id_1", "доп_user_id_2"],
   "anthropic_api_key": "sk-ant-...",
   "vk_access_token": "vk1.a.XXXX",
   "vk_group_id": "123456789",

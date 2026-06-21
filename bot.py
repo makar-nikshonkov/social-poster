@@ -130,15 +130,24 @@ VERDICT_BADGE = {
 # ---------- Логика ----------
 
 def is_allowed(cfg, user_id):
-    owner = str(cfg.get("telegram_owner_id", "")).strip()
-    return (not owner) or str(user_id) == owner
+    """Пускаем владельца и всех из telegram_allowed_ids. Если список пуст — пускаем всех."""
+    allowed = {str(cfg.get("telegram_owner_id", "")).strip()}
+    allowed.update(str(i).strip() for i in cfg.get("telegram_allowed_ids", []))
+    allowed.discard("")
+    return (not allowed) or str(user_id) in allowed
 
 
 def _render_draft(n, d):
     """Текст превью под площадку. zen — это объект статьи (title/summary/body)."""
     if n == "zen" and isinstance(d, dict):
         plain = re.sub(r"<[^>]+>", "", d.get("body", ""))  # убрать HTML-теги для превью
-        return f"📰 {d.get('title', '')}\n{d.get('summary', '')}\n\n{plain}".strip()
+        seo = (
+            f"\n\n🔎 SEO\n"
+            f"title: {d.get('meta_title', '—')}\n"
+            f"desc: {d.get('meta_description', '—')}\n"
+            f"slug: {d.get('slug', '—')}"
+        )
+        return f"📰 {d.get('title', '')}\n{d.get('summary', '')}\n\n{plain}{seo}".strip()
     return str(d or "(пусто)")
 
 
@@ -314,7 +323,10 @@ def handle_callback(cfg, cb):
                         continue
                     results.append(post_site(cfg, art["title"], art["body"],
                                              summary=art.get("summary"), cover_url=cover_url,
-                                             source="ImpactLaunch"))
+                                             source="ImpactLaunch",
+                                             meta_title=art.get("meta_title"),
+                                             meta_description=art.get("meta_description"),
+                                             slug=art.get("slug")))
             except Exception as e:  # одна площадка не валит остальные
                 results.append(f"{LABELS[n]}: ОШИБКА — {e}")
         send(cfg, chat_id, "📣 Результат:\n" + "\n".join(results))
