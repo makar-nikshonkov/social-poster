@@ -112,6 +112,46 @@ def save_zen(text):
     return f"Дзен: текст сохранен в {out.name} для ручной вставки (API нет)"
 
 
+def post_threads(cfg, text, image_url=None):
+    """Публикует пост в Threads через официальный Graph API (graph.threads.net).
+
+    Двухшаговый поток Meta: 1) создать медиа-контейнер, 2) опубликовать его.
+    image_url — публичный URL картинки (Threads сам её скачает; байты не принимает).
+    Нужны в config.json: threads_user_id и threads_access_token (long-lived,
+    scope threads_basic + threads_content_publish).
+    """
+    user_id = str(cfg.get("threads_user_id", "")).strip()
+    token = cfg.get("threads_access_token", "").strip()
+    if not user_id or not token:
+        raise RuntimeError(
+            "Нет threads_user_id / threads_access_token в config.json "
+            "(токен и id берутся в Meta for Developers, scope threads_content_publish)"
+        )
+    base = f"https://graph.threads.net/v1.0/{user_id}"
+    text = (text or "").strip()
+
+    # 1. Создаём медиа-контейнер. С картинкой — media_type=IMAGE, иначе TEXT.
+    create = {"access_token": token, "text": text}
+    if image_url:
+        create["media_type"] = "IMAGE"
+        create["image_url"] = image_url
+    else:
+        create["media_type"] = "TEXT"
+    rc = requests.post(f"{base}/threads", data=create, timeout=60).json()
+    if "error" in rc or not rc.get("id"):
+        raise RuntimeError(f"Threads(контейнер): {rc.get('error', rc)}")
+    creation_id = rc["id"]
+
+    # 2. Публикуем контейнер.
+    rp = requests.post(f"{base}/threads_publish",
+                       data={"access_token": token, "creation_id": creation_id},
+                       timeout=60).json()
+    if "error" in rp or not rp.get("id"):
+        raise RuntimeError(f"Threads(публикация): {rp.get('error', rp)}")
+    suffix = " с фото" if image_url else ""
+    return f"Threads: опубликовано (id {rp['id']}){suffix}"
+
+
 def _clean_slug(slug):
     """ЧПУ: латиница, цифры и дефисы. Чистим то, что мог прислать генератор."""
     s = re.sub(r"[^a-z0-9-]+", "-", (slug or "").strip().lower())
@@ -173,6 +213,7 @@ def post_site(cfg, title, body_html, summary=None, cover_url=None,
 PLATFORMS = {
     "telegram": ("Telegram", post_telegram),
     "vk": ("VK", post_vk),
+    "threads": ("Threads", post_threads),
     "zen": ("Дзен", None),  # особый случай, ручная вставка
 }
 

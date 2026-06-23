@@ -1,6 +1,6 @@
 # Social Poster
 
-Telegram-бот автопостинга в **Telegram, ВКонтакте и на сайт (с авто-перепостом в Яндекс Дзен)**.
+Telegram-бот автопостинга в **Telegram, ВКонтакте, Threads и на сайт (с авто-перепостом в Яндекс Дзен)**.
 Ты присылаешь боту идею — он проверяет факты по веб-источникам, пишет адаптированные посты под
 каждую площадку, предлагает промпт для картинки и публикует после твоего подтверждения.
 
@@ -23,12 +23,12 @@ Telegram-бот автопостинга в **Telegram, ВКонтакте и н
 
 ```
 идея в бот
-  → выбор площадок (Telegram / ВК / Сайт+Дзен)
+  → выбор площадок (Telegram / ВК / Threads / Сайт+Дзен)
   → фактчек (Sonnet + web_search + web_fetch) → вердикт
   → черновик (Haiku) → доводка главредом (Sonnet)
   → бот присылает тексты + промпт картинки
   → присылаешь фото → «Опубликовать»
-  → Telegram и ВК — через API; сайт — через /api/news; Дзен забирает из RSS сайта
+  → Telegram, ВК и Threads — через API; сайт — через /api/news; Дзен забирает из RSS сайта
 ```
 
 Генерация — через Claude API (модели: Haiku для черновика, Sonnet для фактчека и доводки),
@@ -54,6 +54,8 @@ python3 bot.py
 | `anthropic_api_key` | ключ Claude API (console.anthropic.com) |
 | `vk_access_token` | токен сообщества ВК (для текста) / пользователя (для фото) |
 | `vk_group_id` | числовой id сообщества ВК |
+| `threads_user_id` | id аккаунта Threads (Meta for Developers) |
+| `threads_access_token` | long-lived токен Threads, scope `threads_basic` + `threads_content_publish` |
 | `site_api_url` | эндпоинт публикации на сайт (см. `api-external.md`) |
 | `site_api_key` | ключ доступа к API сайта |
 

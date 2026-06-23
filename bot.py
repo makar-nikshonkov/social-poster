@@ -29,11 +29,11 @@ from pathlib import Path
 import requests
 
 import generator
-from social_poster import post_telegram, post_vk, post_site
+from social_poster import post_telegram, post_vk, post_site, post_threads
 from generator import LABELS
 
 HERE = Path(__file__).resolve().parent
-NETWORKS = ["telegram", "vk", "zen"]
+NETWORKS = ["telegram", "vk", "threads", "zen"]
 
 sessions = {}  # chat_id -> {stage, idea, networks, drafts, note, photo_file_id}
 
@@ -300,6 +300,14 @@ def handle_callback(cfg, cb):
             except Exception:
                 traceback.print_exc()
                 cover_url = None
+        # Threads принимает картинку только публичным URL — отдаём прямой URL файла Telegram
+        threads_image_url = None
+        if photo_file_id and "threads" in nets:
+            try:
+                threads_image_url = tg_file_url(cfg, photo_file_id)
+            except Exception:
+                traceback.print_exc()
+                threads_image_url = None
         results = []
         for n in nets:
             draft = sess["drafts"].get(n)
@@ -316,6 +324,12 @@ def handle_callback(cfg, cb):
                         results.append(f"{LABELS[n]}: пусто, пропущено")
                         continue
                     results.append(post_vk(cfg, text, photo_bytes=photo_bytes))
+                elif n == "threads":
+                    text = (draft or "").strip()
+                    if not text:
+                        results.append(f"{LABELS[n]}: пусто, пропущено")
+                        continue
+                    results.append(post_threads(cfg, text, image_url=threads_image_url))
                 elif n == "zen":
                     art = draft if isinstance(draft, dict) else {}
                     if not art.get("title") or not art.get("body"):
